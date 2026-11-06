@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garage 359 - Faça seu Pedido</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-surface: #141414;
+            --bg-input: #1f1f1f;
+            --border-color: #2a2a2a;
+            
+            --primary-red: #d32f2f;
+            --primary-red-hover: #b71c1c;
+            
+            --text-white: #ffffff;
+            --text-muted: #a0a0a0;
+            --text-dim: #707070;
+            
+            --success-green: #25d366;
+            --success-green-hover: #1ebe5d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-white);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        #app-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            flex: 1;
+            background-color: #ffffff;
+            color: #0f172a;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        /* Cabeçalho otimizado para a nova imagem de banner */
+        .header {
+            padding: 0;
+            background-color: #1a0000;
+            border-bottom: 2px solid var(--primary-red);
+            width: 100%;
+            height: 130px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .header-banner {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .search-bar-container {
+            padding: 12px 16px;
+            background-color: #111111;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 14px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-white);
+            font-size: 0.9rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-red);
+        }
+
+        .categories-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 10px 16px;
+            background-color: #111111;
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-white);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--primary-red);
+            color: var(--text-white);
+            border-color: var(--primary-red);
+        }
+
+        .products-grid {
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            background-color: #f8fafc;
+            max-height: 38vh;
+            overflow-y: auto;
+        }
+
+        .product-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            gap: 12px;
+        }
+
+        .product-img {
+            width: 75px;
+            height: 75px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            flex-shrink: 0;
+            filter: contrast(1.15) saturate(1.1);
+        }
+
+        .product-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+        }
+
+        .product-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .product-desc {
+            font-size: 0.75rem;
+            color: #64748b;
+            line-height: 1.2;
+        }
+
+        .product-price {
+            font-size: 0.9rem;
+            color: #1e293b;
+            font-weight: 800;
+            margin-top: 2px;
+        }
+
+        .btn-add {
+            background-color: var(--primary-red);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+            height: fit-content;
+        }
+
+        .order-panel {
+            background-color: #ffffff;
+            color: #0f172a;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .order-header-title {
+            padding: 8px 16px;
+            background-color: #f1f5f9;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e2e8f0;
+            color: #334155;
+        }
+
+        .customer-info {
+            padding: 8px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 7px 10px;
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            color: #0f172a;
+            font-size: 0.8rem;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-red);
+        }
+
+        .btn-calc {
+            background-color: #0f172a;
+            color: white;
+            border: none;
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.75rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-calc:hover {
+            background-color: var(--primary-red);
+        }
+
+        .order-items {
+            padding: 8px 16px;
+            max-height: 80px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background-color: #f8fafc;
+            flex: 1;
+        }
+
+        .empty-cart-msg {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        .cart-item {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-left: 3px solid var(--primary-red);
+            border-radius: 6px;
+            padding: 6px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .cart-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: #0f172a;
+        }
+
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .qty-btn {
+            background-color: #e2e8f0;
+            color: #0f172a;
+            border: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-item-details {
+            font-size: 0.7rem;
+            color: #64748b;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .order-footer {
+            padding: 10px 16px;
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #475569;
+        }
+
+        .summary-row.total {
+            font-size: 1.05rem;
+            font-weight: 900;
+            color: #0f172a;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 4px;
+        }
+
+        .summary-row.total span:last-child {
+            color: var(--primary-red);
+        }
+
+        .btn-whatsapp {
+            background-color: var(--success-green);
+            color: #ffffff;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-whatsapp:hover {
+            background-color: var(--success-green-hover);
+        }
+
+        #cep-info {
+            font-size: 0.7rem;
+            color: #0284c7;
+            font-weight: 600;
+            margin-top: -2px;
+        }
+
+        #pix-modal {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .pix-modal-card {
+            background-color: #ffffff;
+            color: #0f172a;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .pix-modal-qr {
+            width: 150px;
+            height: 150px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+        }
+
+        .btn-close-modal {
+            background-color: #e2e8f0;
+            color: #334155;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <div id="pix-modal">
+        <div class="pix-modal-card">
+            <h3 style="color: var(--primary-red); font-size: 1.1rem;">Pagamento via Pix</h3>
+            <p style="font-size: 0.8rem; color: #64748b;">Escaneie o QR Code abaixo ou copie a chave para efetuar o pagamento do valor total:</p>
+            <div id="pix-total-display" style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">R$ 0,00</div>
+            
+            <img id="modal-qr-img" src="" alt="QR Code Pix" class="pix-modal-qr">
+            
+            <div style="width: 100%; display: flex; flex-direction: column; gap: 4px;">
+                <input type="text" id="modal-pix-key" class="input-field" value="34216458840" readonly style="text-align: center; font-size: 0.8rem;">
+                <button class="btn-calc" onclick="copyModalPixKey()" style="background-color: #0f172a; width: 100%;">Copiar Chave Pix</button>
+            </div>
+
+            <p style="font-size: 0.7rem; color: #64748b;">Após realizar o pagamento, clique no botão abaixo para enviar o pedido e o comprovante no WhatsApp.</p>
+            
+            <button class="btn-whatsapp" onclick="confirmPixAndSend()">
+                📲 Enviar Pedido no WhatsApp
+            </button>
+            <button class="btn-close-modal" onclick="closePixModal()">Voltar / Alterar Pagamento</button>
+        </div>
+    </div>
+
+    <!-- Cabeçalho com a nova imagem ajustada -->
+    <div class="header">
+        <img src="Gemini_Generated_Image_upkwrbupkwrbupkw.jfif" alt="Garage 359 Banner" class="header-banner" onerror="this.onerror=null; this.src='https://placehold.co/600x130/d32f2f/ffffff?text=HABURGUERIA+GARAGE+359';">
+    </div>
+
+    <div class="search-bar-container">
+        <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar lanche, bebida ou porção..." oninput="handleSearch()">
+    </div>
+
+    <div class="categories-tabs" id="categories-tabs">
+        <button class="tab-btn active" onclick="filterCategory('artesanais', this)">Artesanais</button>
+        <button class="tab-btn" onclick="filterCategory('especiais', this)">Especiais</button>
+        <button class="tab-btn" onclick="filterCategory('kids', this)">Kids</button>
+        <button class="tab-btn" onclick="filterCategory('porcoes', this)">Porções</button>
+        <button class="tab-btn" onclick="filterCategory('bebidas', this)">Bebidas</button>
+        <button class="tab-btn" onclick="filterCategory('adicionais', this)">Adicionais</button>
+    </div>
+
+    <div class="products-grid" id="products-grid"></div>
+
+    <div class="order-panel">
+        <div class="order-header-title">Seu Pedido</div>
+        
+        <div class="customer-info">
+            <input type="text" id="cust-name" class="input-field" placeholder="Seu Nome Completo *">
+            <input type="text" id="cust-phone" class="input-field" placeholder="Seu WhatsApp (com DDD) *">
+            <div class="input-group">
+                <select id="order-type" class="input-field" onchange="handleOrderTypeChange()">
+                    <option value="Delivery">Delivery (Consulta por CEP)</option>
+                    <option value="Retirada">Retirada no Balcão</option>
+                </select>
+                <select id="pay-method" class="input-field" onchange="handlePayMethodChange()">
+                    <option value="Pix">Pix</option>
+                    <option value="Cartão de Crédito">Cartão Crédito</option>
+                    <option value="Cartão de Débito">Cartão Débito</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                </select>
+            </div>
+
+            <input type="text" id="cust-change" class="input-field" placeholder="Troco para quanto? (Ex: R$ 50,00)" style="display: none;">
+
+            <div id="address-container" style="display: flex; flex-direction: column; gap: 4px;">
+                <div class="input-group">
+                    <input type="text" id="cust-cep" class="input-field" placeholder="Digite seu CEP (só números)" maxlength="8" style="max-width: 130px;">
+                    <button class="btn-calc" onclick="consultarCep()">Buscar CEP</button>
+                </div>
+                <input type="text" id="cust-address" class="input-field" placeholder="Endereço completo (Rua, Número, Bairro) *">
+                <div id="cep-info">Digite o CEP para calcular a taxa de entrega.</div>
+            </div>
+        </div>
+
+        <div class="order-items" id="order-items"></div>
+
+        <div class="order-footer">
+            <input type="text" id="order-obs" class="input-field" placeholder="Observações gerais (ex: Sem cebola)">
+            
+            <div class="summary-row">
+                <span>Subtotal:</span>
+                <span id="subtotal-val">R$ 0,00</span>
+            </div>
+            <div class="summary-row">
+                <span>Taxa de Entrega:</span>
+                <span id="delivery-val">R$ 0,00</span>
+            </div>
+            <div class="summary-row total">
+                <span>TOTAL:</span>
+                <span id="total-val">R$ 0,00</span>
+            </div>
+
+            <button class="btn-whatsapp" onclick="handleFinalizeOrder()">
+                📲 Finalizar Pedido
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const products = [
+        { id: 1, name: 'Luigi', category: 'artesanais', price: 26.00, desc: 'Pão de brioche, hambúrguer especial 160g, 2 fatias de Mussarela e maionese temperada.', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=300&q=80' },
+        { id: 2, name: 'Mc Queen', category: 'artesanais', price: 26.00, desc: 'Pão de brioche, hambúrguer especial 160g, 2 fatias de Mussarela, alface, tomate e maionese temperada.', img: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=300&q=80' },
+        { id: 3, name: 'Mate', category: 'artesanais', price: 30.00, desc: 'Pão de brioche, hambúrguer especial de 160g, Ovo, Bacon, 2 fatias de Mussarela e maionese temperada.', img: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=300&q=80' },
+        { id: 4, name: 'Doc', category: 'artesanais', price: 26.00, desc: 'Pão de brioche, hambúrguer especial de 160g, 2 fatias queijo cheddar, cebola caramelizada e maionese temperada.', img: 'https://images.unsplash.com/photo-1583032015865-e39ce382c3a5?auto=format&fit=crop&w=300&q=80' },
+        { id: 5, name: 'Xerife', category: 'artesanais', price: 38.00, desc: 'Pão de brioche, 2 hambúrgueres de 160g, 4 fatias de cheddar, cebola caramelizada, bacon e maionese temperada.', img: 'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&w=300&q=80' },
+        { id: 6, name: 'Sargento', category: 'artesanais', price: 28.00, desc: 'Pão de brioche, hambúrguer especial de 160g, 2 fatias de cheddar, bacon, alface, tomate e maionese temperada.', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=300&q=80' },
+        { id: 7, name: 'Hot Burguer', category: 'artesanais', price: 28.00, desc: 'Pão de brioche, hamburger de 160gr, 2 fatias de mussarela, bacon, geleia de pimenta e maionese.', img: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=300&q=80' },
+        { id: 8, name: 'Smash Simples', category: 'artesanais', price: 21.00, desc: 'Pão de brioche, hambúrguer artesanal de 100g aberto na hora, tostado na chapa com cheddar e maionese temperada.', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=300&q=80' },
+        { id: 9, name: 'Smash Duplo', category: 'artesanais', price: 26.00, desc: 'Pão de brioche, 2x hambúrgueres artesanais de 100g tostados na chapa com cheddar e maionese temperada.', img: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=300&q=80' },
+        { id: 10, name: 'Smash Triplo', category: 'artesanais', price: 33.00, desc: 'Pão de brioche, 3x hambúrgueres artesanais de 100g tostados na chapa com cheddar e maionese temperada.', img: 'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&w=300&q=80' },
+        { id: 11, name: 'Ramon', category: 'artesanais', price: 28.00, desc: 'Pão de brioche, pernil desfiado 150g, 2 fatias de mussarela, bacon, alface, tomate e maionese temperada.', img: 'https://images.unsplash.com/photo-1525059696034-4967a8e1dca2?auto=format&fit=crop&w=300&q=80' },
+        { id: 12, name: 'Guido', category: 'artesanais', price: 28.00, desc: 'Pão, hambúrguer artesanal 150g, 2 fatias de cheddar, bacon, maionese temperada e molho barbecue.', img: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=300&q=80' },
+
+        // Especiais
+        { id: 13, name: 'Lanche de Pernil', category: 'especiais', price: 26.00, desc: 'Pão Francês, pernil suíno desfiado, vinagrete e maionese temperada.', img: 'https://images.unsplash.com/photo-1525059696034-4967a8e1dca2?auto=format&fit=crop&w=300&q=80' },
+        { id: 14, name: 'Lanche Pernil Especial', category: 'especiais', price: 36.00, desc: 'Pão Francês, pernil suíno desfiado, 2 fatias de mussarela, vinagrete, geleia de pimenta e maionese temperada.', img: 'https://images.unsplash.com/photo-1525059696034-4967a8e1dca2?auto=format&fit=crop&w=300&q=80' },
+        { id: 15, name: 'Filé de Frango', category: 'especiais', price: 26.00, desc: 'Pão Francês, filé de frango marinado e grelhado, 2 fatias de mussarela, alface, tomate e maionese temperada.', img: 'https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=300&q=80' },
+        { id: 16, name: 'Australiano', category: 'especiais', price: 37.00, desc: 'Pão Preto Australiano, hambúrguer 160g, Catupiry Original, 3 fatias de cheddar, bacon, 2 onion rings e barbecue.', img: 'https://images.unsplash.com/photo-1583032015865-e39ce382c3a5?auto=format&fit=crop&w=300&q=80' },
+        { id: 17, name: 'Grego', category: 'especiais', price: 30.00, desc: 'Pão francês, hambúrguer 160g, 2 fatias de cheddar, bacon, cebola caramelizada e maionese temperada.', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=300&q=80' },
+        { id: 18, name: 'Italiano Catupiry Bacon', category: 'especiais', price: 38.00, desc: 'Pão de brioche, hambúrguer 160g, Catupiry Original, tomate tostado na chapa, orégano, bacon e maionese temperada.', img: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=300&q=80' },
+        { id: 19, name: 'Churrasco Mignon', category: 'especiais', price: 38.00, desc: 'Pão francês, 150g de filé mignon grelhado na chapa, 2 fatias de mussarela, vinagrete e maionese temperada.', img: 'https://images.unsplash.com/photo-1603048588665-791ca8aea617?auto=format&fit=crop&w=300&q=80' },
+        { id: 20, name: 'Big Picanha', category: 'especiais', price: 42.00, desc: 'Pão de Brioche, Hambúrguer de Picanha 200g, 2 fatias de cheddar, 2 de mussarela, bacon, alface, tomate e maionese temperada.', img: 'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&w=300&q=80' },
+
+        // Kids
+        { id: 21, name: 'Kids Combinho', category: 'kids', price: 31.00, desc: '10 nuggets, 1 porção de batata frita pequena + 1 refrigerante lata Coca-Cola.', img: 'https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=300&q=80' },
+        { id: 22, name: 'Kids Sally Burguer', category: 'kids', price: 31.00, desc: 'Pão de brioche, 2 hambúrgueres artesanais de 50g, 1 fatia de mussarela, maionese Hellmanns + acompanha batata pequena.', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=300&q=80' },
+
+        // Porções
+        { id: 23, name: 'Promo Batata + Refri', category: 'porcoes', price: 14.99, desc: 'Porção de batata frita acompanhada de refrigerante em lata.', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=300&q=80' },
+        { id: 24, name: 'Batata P', category: 'porcoes', price: 12.99, desc: 'Porção de batata frita tamanho pequeno.', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=300&q=80' },
+        { id: 25, name: 'Batata M', category: 'porcoes', price: 14.99, desc: 'Porção de batata frita tamanho médio.', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=300&q=80' },
+        { id: 26, name: 'Batata G', category: 'porcoes', price: 15.99, desc: 'Porção de batata frita tamanho grande.', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=300&q=80' },
+        { id: 27, name: 'Batata Completa M', category: 'porcoes', price: 25.99, desc: 'Batata frita coberta com bacon crocante e queijo cheddar derretido.', img: 'https://images.unsplash.com/photo-1585109649139-366815a0d713?auto=format&fit=crop&w=300&q=80' },
+        { id: 28, name: 'Batata Completa G', category: 'porcoes', price: 35.99, desc: 'Batata frita grande coberta com bacon crocante e queijo cheddar derretido.', img: 'https://images.unsplash.com/photo-1585109649139-366815a0d713?auto=format&fit=crop&w=300&q=80' },
+
+        // Adicionais
+        { id: 29, name: 'Adicional Ovo', category: 'adicionais', price: 5.00, desc: 'Ovo frito adicional para o lanche.', img: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=300&q=80' },
+        { id: 30, name: 'Adicional Bacon', category: 'adicionais', price: 5.00, desc: 'Porção extra de fatias de bacon crocante.', img: 'https://images.unsplash.com/photo-1606851094095-9f56120e34a4?auto=format&fit=crop&w=300&q=80' },
+        { id: 31, name: 'Adicional Carne', category: 'adicionais', price: 10.00, desc: 'Hambúrguer artesanal extra de 160g.', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=300&q=80' },
+        { id: 32, name: 'Adicional Cheddar', category: 'adicionais', price: 6.00, desc: 'Fatias extras de queijo cheddar.', img: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=300&q=80' },
+
+        // Bebidas
+        { id: 33, name: 'Coca-Cola 350ml', category: 'bebidas', price: 6.00, desc: 'Refrigerante em lata 350ml.', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=300&q=80' },
+        { id: 34, name: 'Coca-Cola Zero 350ml', category: 'bebidas', price: 6.00, desc: 'Refrigerante zero açúcar em lata 350ml.', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=300&q=80' },
+        { id: 35, name: 'Guaraná Antarctica 350ml', category: 'bebidas', price: 6.00, desc: 'Refrigerante Guaraná Antarctica em lata 350ml.', img: 'https://images.unsplash.com/photo-1629203851122-3726ecdf0804?auto=format&fit=crop&w=300&q=80' },
+        { id: 36, name: 'Guaraná Zero 350ml', category: 'bebidas', price: 6.00, desc: 'Refrigerante Guaraná Zero em lata 350ml.', img: 'https://images.unsplash.com/photo-1629203851122-3726ecdf0804?auto=format&fit=crop&w=300&q=80' },
+        { id: 37, name: 'Heineken Long Neck', category: 'bebidas', price: 10.00, desc: 'Cerveja Heineken Long Neck 330ml.', img: 'https://images.unsplash.com/photo-1608270105747-23f6644243b2?auto=format&fit=crop&w=300&q=80' },
+        { id: 38, name: 'Coca-Cola 2 Litros', category: 'bebidas', price: 14.00, desc: 'Refrigerante Coca-Cola garrafa pet 2 litros.', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=300&q=80' }
+    ];
+
+    let currentCart = [];
+    let activeFilter = 'artesanais';
+    let deliveryFee = 4.99;
+
+    function renderProducts(filter = 'artesanais', searchQuery = '') {
+        activeFilter = filter;
+        const grid = document.getElementById('products-grid');
+        grid.innerHTML = '';
+        
+        let filtered = products;
+        if (searchQuery.trim() !== '') {
+            const query = searchQuery.toLowerCase();
+            filtered = products.filter(p => p.name.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query));
+        } else {
+            filtered = products.filter(p => p.category === filter);
+        }
+
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div style="color: #64748b; text-align: center; padding: 20px; font-size: 0.85rem;">Nenhum produto encontrado.</div>';
+            return;
+        }
+
+        filtered.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                <img src="${p.img}" alt="${p.name}" class="product-img" loading="lazy">
+                <div class="product-info">
+                    <div class="product-title">${p.name}</div>
+                    <div class="product-desc">${p.desc}</div>
+                    <div class="product-price">R$ ${Number(p.price).toFixed(2).replace('.', ',')}</div>
+                </div>
+                <button class="btn-add" onclick="addToCart(${p.id})">+ Adicionar</button>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function handleSearch() {
+        const query = document.getElementById('search-input').value;
+        if (query.trim() !== '') {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            renderProducts('', query);
+        } else {
+            renderProducts(activeFilter, '');
+        }
+    }
+
+    function filterCategory(cat, element) {
+        document.getElementById('search-input').value = '';
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        if (element) element.classList.add('active');
+        renderProducts(cat, '');
+    }
+
+    function addToCart(productId) {
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+
+        const existing = currentCart.find(item => item.id === product.id && !item.obs);
+        if (existing) {
+            existing.qty++;
+        } else {
+            currentCart.push({ ...product, qty: 1, obs: '' });
+        }
+        renderCart();
+    }
+
+    function changeQty(index, delta) {
+        currentCart[index].qty += delta;
+        if (currentCart[index].qty <= 0) {
+            currentCart.splice(index, 1);
+        }
+        renderCart();
+    }
+
+    function updateObs(index, val) {
+        currentCart[index].obs = val;
+    }
+
+    function handleOrderTypeChange() {
+        const type = document.getElementById('order-type').value;
+        const addressContainer = document.getElementById('address-container');
+        if (type === 'Retirada') {
+            addressContainer.style.display = 'none';
+            deliveryFee = 0;
+        } else {
+            addressContainer.style.display = 'flex';
+        }
+        updateTotals();
+    }
+
+    function handlePayMethodChange() {
+        const payMethod = document.getElementById('pay-method').value;
+        const changeInput = document.getElementById('cust-change');
+
+        if (payMethod === 'Dinheiro') {
+            changeInput.style.display = 'block';
+        } else {
+            changeInput.style.display = 'none';
+            changeInput.value = '';
+        }
+    }
+
+    function copyModalPixKey() {
+        const keyInput = document.getElementById('modal-pix-key');
+        keyInput.select();
+        keyInput.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(keyInput.value);
+        alert('Chave Pix copiada com sucesso!');
+    }
+
+    async function consultarCep() {
+        let cep = document.getElementById('cust-cep').value.replace(/\D/g, '');
+        const infoElement = document.getElementById('cep-info');
+        const addressInput = document.getElementById('cust-address');
+
+        if (cep.length !== 8) {
+            alert('Digite um CEP válido com 8 dígitos.');
+            return;
+        }
+
+        infoElement.innerText = 'Buscando CEP...';
+
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await response.json();
+
+            if (data.erro) {
+                infoElement.innerText = 'CEP não encontrado. Verifique o número digitado.';
+                return;
+            }
+
+            addressInput.value = `${data.logradouro || ''}, - Bairro: ${data.bairro || ''} - ${data.localidade}/${data.uf}`;
+            
+            let prefixoCep = parseInt(cep.substring(0, 5));
+            if (prefixoCep >= 64000 && prefixoCep <= 64999) {
+                deliveryFee = 4.99;
+                infoElement.innerText = `Região atendida (${data.bairro || 'Local'}) | Frete: R$ 4,99`;
+            } else {
+                deliveryFee = 8.00;
+                infoElement.innerText = `Região (${data.bairro || 'Adjacente'}) | Frete: R$ 8,00`;
+            }
+
+            updateTotals();
+
+        } catch (error) {
+            console.error(error);
+            infoElement.innerText = 'Erro ao consultar o CEP. Tente novamente.';
+            deliveryFee = 4.99;
+            updateTotals();
+        }
+    }
+
+    function renderCart() {
+        const container = document.getElementById('order-items');
+        container.innerHTML = '';
+
+        if (currentCart.length === 0) {
+            container.innerHTML = '<div class="empty-cart-msg">Carrinho vazio. Escolha os itens acima 🍔</div>';
+            updateTotals();
+            return;
+        }
+
+        currentCart.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'cart-item';
+            div.innerHTML = `
+                <div class="cart-item-header">
+                    <span>${item.name}</span>
+                    <div class="cart-item-controls">
+                        <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
+                        <span>${item.qty}</span>
+                        <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                    </div>
+                </div>
+                <div class="cart-item-details">
+                    <div>Subtotal: R$ ${(item.price * item.qty).toFixed(2).replace('.', ',')}</div>
+                    <input type="text" class="input-field" style="padding: 2px 4px; font-size: 0.65rem;" placeholder="Obs: Sem cebola..." value="${item.obs}" onchange="updateObs(${index}, this.value)">
+                </div>
+            `;
+            container.appendChild(div);
+        });
+
+        updateTotals();
+    }
+
+    function updateTotals() {
+        const subtotal = currentCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        const type = document.getElementById('order-type').value;
+        const finalDelivery = type === 'Delivery' ? deliveryFee : 0;
+        const total = subtotal + finalDelivery;
+
+        document.getElementById('subtotal-val').innerText = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+        document.getElementById('delivery-val').innerText = `R$ ${finalDelivery.toFixed(2).replace('.', ',')}`;
+        document.getElementById('total-val').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    }
+
+    function handleFinalizeOrder() {
+        if (currentCart.length === 0) {
+            alert('Adicione pelo menos um item ao carrinho antes de finalizar.');
+            return;
+        }
+
+        const name = document.getElementById('cust-name').value.trim();
+        const phone = document.getElementById('cust-phone').value.trim();
+        const type = document.getElementById('order-type').value;
+        const cep = document.getElementById('cust-cep').value.trim();
+        const address = document.getElementById('cust-address').value.trim();
+        const pay = document.getElementById('pay-method').value;
+
+        if (!name || !phone) {
+            alert('Por favor, preencha seu Nome e WhatsApp.');
+            return;
+        }
+
+        if (type === 'Delivery' && (!cep || !address)) {
+            alert('Por favor, informe e consulte o seu CEP e endereço.');
+            return;
+        }
+
+        const subtotal = currentCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        const finalDelivery = type === 'Delivery' ? deliveryFee : 0;
+        const total = subtotal + finalDelivery;
+
+        if (pay === 'Pix') {
+            document.getElementById('pix-total-display').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            const qrDataKey = `34216458840`;
+            document.getElementById('modal-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrDataKey}`;
+            document.getElementById('pix-modal').style.display = 'flex';
+        } else {
+            sendToWhatsApp();
+        }
+    }
+
+    function closePixModal() {
+        document.getElementById('pix-modal').style.display = 'none';
+    }
+
+    function confirmPixAndSend() {
+        closePixModal();
+        sendToWhatsApp();
+    }
+
+    function sendToWhatsApp() {
+        const name = document.getElementById('cust-name').value.trim();
+        const phone = document.getElementById('cust-phone').value.trim();
+        const type = document.getElementById('order-type').value;
+        const cep = document.getElementById('cust-cep').value.trim();
+        const address = document.getElementById('cust-address').value.trim();
+        const pay = document.getElementById('pay-method').value;
+        const changeVal = document.getElementById('cust-change').value.trim();
+        const generalObs = document.getElementById('order-obs').value.trim();
+
+        const subtotal = currentCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        const finalDelivery = type === 'Delivery' ? deliveryFee : 0;
+        const total = subtotal + finalDelivery;
+
+        let message = `🍔 *NOVO PEDIDO - GARAGE 359* 🍔\n\n`;
+        message += `👤 *Cliente:* ${name}\n`;
+        message += `📞 *WhatsApp:* ${phone}\n`;
+        message += `📍 *Tipo:* ${type}\n`;
+        if (type === 'Delivery') {
+            message += `🏠 *Endereço:* ${address} (CEP: ${cep})\n`;
+        }
+        message += `💳 *Pagamento:* ${pay}\n`;
+        if (pay === 'Dinheiro' && changeVal) {
+            message += `💵 *Troco para:* ${changeVal}\n`;
+        }
+        if (pay === 'Pix') {
+            message += `📲 *Status Pix:* Pagamento via Pix realizado (Chave: 34216458840 - Favor enviar comprovante)\n`;
+        }
+        if (generalObs) {
+            message += `💬 *Obs:* ${generalObs}\n`;
+        }
+        
+        message += `\n----------------------------------\n`;
+        message += `📋 *ITENS DO PEDIDO:*\n`;
+        
+        currentCart.forEach(item => {
+            message += `• ${item.qty}x ${item.name} - R$ ${(item.price * item.qty).toFixed(2).replace('.', ',')}\n`;
+            if (item.obs) message += `  _Obs: ${item.obs}_\n`;
+        });
+
+        message += `----------------------------------\n`;
+        message += `📦 Subtotal: R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
+        message += `🛵 Entrega: R$ ${finalDelivery.toFixed(2).replace('.', ',')}\n`;
+        message += `💰 *TOTAL A PAGAR: R$ ${total.toFixed(2).replace('.', ',')}*`;
+
+        const storeWhatsAppNumber = "5511952318170";
+        const encodedMessage = encodeURIComponent(message);
+        window.open(`https://wa.me/${storeWhatsAppNumber}?text=${encodedMessage}`, '_blank');
+    }
+
+    renderProducts('artesanais');
+    renderCart();
+</script>
+
+</body>
+</html>
